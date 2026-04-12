@@ -222,7 +222,7 @@ async function processRequestTransformers(
   }
 
   // Execute transformer's transformRequestOut method
-  if (!bypass && typeof transformer.transformRequestOut === "function") {
+  if (!bypass && !provider.skipTransform && typeof transformer.transformRequestOut === "function") {
     const transformOut = await transformer.transformRequestOut(requestBody);
     if (transformOut.body) {
       requestBody = transformOut.body;
@@ -335,9 +335,19 @@ async function sendRequestToProvider(
   // Send HTTP request
   // Prepare headers
   const requestHeaders: Record<string, string> = {
-    Authorization: `Bearer ${provider.apiKey}`,
     ...(config?.headers || {}),
   };
+
+  if (provider.authType === "x-api-key") {
+    requestHeaders["x-api-key"] = provider.apiKey;
+    delete requestHeaders["Authorization"];
+  } else if (provider.authType?.toLowerCase() === "bearer") {
+    requestHeaders["Authorization"] = `Bearer ${provider.apiKey}`;
+  } else if (provider.authType) {
+    requestHeaders["Authorization"] = `${provider.authType} ${provider.apiKey}`;
+  } else {
+    requestHeaders["Authorization"] = `Bearer ${provider.apiKey}`;
+  }
 
   for (const key in requestHeaders) {
     if (requestHeaders[key] === "undefined") {
@@ -429,7 +439,7 @@ async function processResponseTransformers(
   }
 
   // Execute transformer's transformResponseIn method
-  if (!bypass && transformer.transformResponseIn) {
+  if (!bypass && !provider.skipTransform && transformer.transformResponseIn) {
     finalResponse = await transformer.transformResponseIn(
       finalResponse,
       context
