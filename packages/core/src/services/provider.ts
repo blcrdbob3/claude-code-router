@@ -88,6 +88,8 @@ export class ProviderService {
           baseUrl: providerConfig.api_base_url,
           apiKey: providerConfig.api_key,
           models: providerConfig.models || [],
+          skipTransform: providerConfig.skipTransform,
+          authType: providerConfig.authType,
           transformer: providerConfig.transformer ? transformer : undefined,
         });
 
