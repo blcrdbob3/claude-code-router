@@ -183,18 +183,15 @@ const getUseModel = async (
     req.log.info(`Using background model for ${req.body.model}`);
     return { model: globalRouter.background, scenarioType: 'background' };
   }
-  // The priority of websearch must be higher than thinking.
-  if (
-    Array.isArray(req.body.tools) &&
-    req.body.tools.some((tool: any) => tool.type?.startsWith("web_search")) &&
-    Router?.webSearch
-  ) {
-    return { model: Router.webSearch, scenarioType: 'webSearch' };
-  }
-  // if exits thinking, use the think model
-  if (req.body.thinking && Router?.think) {
-    req.log.info(`Using think model for ${req.body.thinking}`);
+  // if thinking is enabled, use the think model
+  if ((req.body.enable_thinking || req.body.thinking?.type === "enabled" || req.body.thinking) && Router?.think) {
+    req.log.info(`Using think model for ${JSON.stringify(req.body.thinking)}`);
     return { model: Router.think, scenarioType: 'think' };
+  }
+  // If request has output_config, route to structured model (MiniMax does not support it)
+  if (req.body.output_config && Router?.structured) {
+    req.log.info(`Using structured output model for output_config`);
+    return { model: Router.structured, scenarioType: 'structured' };
   }
   return { model: Router?.default, scenarioType: 'default' };
 };
@@ -205,14 +202,14 @@ export interface RouterContext {
   event?: any;
 }
 
-export type RouterScenarioType = 'default' | 'background' | 'think' | 'longContext' | 'webSearch';
+export type RouterScenarioType = 'default' | 'background' | 'think' | 'longContext' | 'structured';
 
 export interface RouterFallbackConfig {
   default?: string[];
   background?: string[];
   think?: string[];
   longContext?: string[];
-  webSearch?: string[];
+  structured?: string[];
 }
 
 export const router = async (req: any, _res: any, context: RouterContext) => {

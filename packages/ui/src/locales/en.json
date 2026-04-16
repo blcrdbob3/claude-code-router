@@ -115,9 +115,6 @@
     "think": "Think",
     "longContext": "Long Context",
     "longContextThreshold": "Context Threshold",
-    "webSearch": "Web Search",
-    "image": "Image",
-    "forceUseImageAgent": "Force Use Image Agent",
     "selectModel": "Select a model...",
     "searchModel": "Search model...",
     "noModelFound": "No model found."

@@ -111,8 +111,6 @@ export interface RouterConfig {
   think?: string;
   longContext?: string;
   longContextThreshold?: number;
-  webSearch?: string;
-  image?: string;
   [key: string]: string | number | undefined;
 }
 

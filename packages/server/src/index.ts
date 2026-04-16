@@ -217,8 +217,8 @@ async function getServer(options: RunOptions = {}) {
           // Set agent identifier
           useAgents.push(agent.name)
 
-          // change request body
-          agent.reqHandler(req, config);
+          // change request body (async to allow agent processing)
+          await agent.reqHandler(req, config);
 
           // append agent tools
           if (agent.tools.size) {

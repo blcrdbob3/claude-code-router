@@ -17,8 +17,6 @@ export interface RouterConfig {
     think: string;
     longContext: string;
     longContextThreshold: number;
-    webSearch: string;
-    image: string;
     custom?: any;
 }
 
@@ -54,7 +52,6 @@ export interface Config {
   Router: RouterConfig;
   transformers: Transformer[];
   StatusLine?: StatusLineConfig;
-  forceUseImageAgent?: boolean;
   // Top-level settings
   LOG: boolean;
   LOG_LEVEL: string;

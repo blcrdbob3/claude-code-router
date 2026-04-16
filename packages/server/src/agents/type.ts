@@ -13,7 +13,7 @@ export interface IAgent {
 
   shouldHandle: (req: any, config: any) => boolean;
 
-  reqHandler: (req: any, config: any) => void;
+  reqHandler: (req: any, config: any) => Promise<void>;
 
   resHandler?: (payload: any, config: any) => void;
 }
