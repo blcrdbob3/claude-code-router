@@ -188,11 +188,6 @@ const getUseModel = async (
     req.log.info(`Using think model for ${JSON.stringify(req.body.thinking)}`);
     return { model: Router.think, scenarioType: 'think' };
   }
-  // If request has output_config, route to structured model (MiniMax does not support it)
-  if (req.body.output_config && Router?.structured) {
-    req.log.info(`Using structured output model for output_config`);
-    return { model: Router.structured, scenarioType: 'structured' };
-  }
   return { model: Router?.default, scenarioType: 'default' };
 };
 
@@ -202,14 +197,13 @@ export interface RouterContext {
   event?: any;
 }
 
-export type RouterScenarioType = 'default' | 'background' | 'think' | 'longContext' | 'structured';
+export type RouterScenarioType = 'default' | 'background' | 'think' | 'longContext';
 
 export interface RouterFallbackConfig {
   default?: string[];
   background?: string[];
   think?: string[];
   longContext?: string[];
-  structured?: string[];
 }
 
 export const router = async (req: any, _res: any, context: RouterContext) => {

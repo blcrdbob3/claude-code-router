@@ -41,23 +41,6 @@ export async function executeCodeCommand(
     env: env as ClaudeSettingsFlag['env']
   };
 
-  // Add statusLine configuration
-  // Priority: preset.StatusLine > global config.StatusLine
-  const statusLineConfig = presetConfig?.StatusLine || config?.StatusLine;
-
-  if (statusLineConfig?.enabled) {
-    // If using preset, pass preset name to statusline command
-    const statuslineCommand = presetName
-      ? `ccr statusline ${presetName}`
-      : "ccr statusline";
-
-    settingsFlag.statusLine = {
-      type: "command",
-      command: statuslineCommand,
-      padding: 0,
-    }
-  }
-
   // Merge claudeCodeSettings from preset into settingsFlag
   if (presetConfig?.claudeCodeSettings) {
     settingsFlag = {

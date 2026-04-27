@@ -1,0 +1,143 @@
+{
+  "LOG": true,
+  "LOG_LEVEL": "debug",
+  "CLAUDE_PATH": "",
+  "HOST": "127.0.0.1",
+  "PORT": 3456,
+  "APIKEY": "sk-ccr-REDACTED",
+  "API_TIMEOUT_MS": 600000,
+  "transformers": [],
+  "Providers": [
+    {
+      "name": "cloudflare-minimax",
+      "api_base_url": "https://gateway.ai.cloudflare.com/v1/ACCOUNT_ID/homelab-ai-gateway/custom-minimax/anthropic/v1/messages",
+      "api_key": "REDACTED",
+      "models": [
+        "MiniMax-M2.7"
+      ],
+      "skipTransform": true,
+      "authType": "Bearer",
+      "headers": {
+        "cf-aig-authorization": "Bearer REDACTED"
+      }
+    },
+    {
+      "name": "cloudflare-zai",
+      "api_base_url": "https://gateway.ai.cloudflare.com/v1/ACCOUNT_ID/homelab-ai-gateway/custom-zai/api/anthropic/v1/messages",
+      "api_key": "REDACTED",
+      "models": [
+        "glm-5.1"
+      ],
+      "skipTransform": true,
+      "authType": "Bearer",
+      "headers": {
+        "cf-aig-authorization": "Bearer REDACTED"
+      }
+    }
+  ],
+  "StatusLine": {
+    "enabled": true,
+    "currentStyle": "powerline",
+    "default": {
+      "modules": [
+        {
+          "type": "workDir",
+          "icon": "[",
+          "text": "{{workDirName}}",
+          "suffix": "]"
+        },
+        {
+          "type": "gitBranch",
+          "icon": "<",
+          "text": "{{gitBranch}}",
+          "suffix": ">"
+        },
+        {
+          "type": "model",
+          "icon": "(",
+          "text": "{{model}}",
+          "suffix": ")"
+        },
+        {
+          "type": "usage",
+          "icon": "in:",
+          "text": "{{inputTokens}}"
+        },
+        {
+          "type": "usage",
+          "icon": "out:",
+          "text": "{{outputTokens}}"
+        }
+      ]
+    },
+    "powerline": {
+      "modules": [
+        {
+          "type": "workDir",
+          "icon": "",
+          "text": "{{workDirName}}",
+          "color": "white",
+          "background": "#1E66F5"
+        },
+        {
+          "type": "gitBranch",
+          "icon": "",
+          "text": "{{gitBranch}}",
+          "color": "white",
+          "background": "#40A02B"
+        },
+        {
+          "type": "model",
+          "icon": "",
+          "text": "{{model}}",
+          "color": "white",
+          "background": "#4C4F69"
+        },
+        {
+          "type": "context",
+          "icon": "",
+          "text": "{{contextPercent}}%",
+          "color": "white",
+          "background": "#8839EF"
+        },
+        {
+          "type": "usage",
+          "icon": "↑",
+          "text": "{{inputTokens}}",
+          "color": "white",
+          "background": "#179299"
+        },
+        {
+          "type": "usage",
+          "icon": "↓",
+          "text": "{{outputTokens}}",
+          "color": "white",
+          "background": "#DF8E1D"
+        }
+      ]
+    }
+  },
+  "Router": {
+    "default": "cloudflare-minimax,MiniMax-M2.7",
+    "background": "cloudflare-minimax,MiniMax-M2.7",
+    "think": "cloudflare-zai,glm-5.1",
+    "longContext": "cloudflare-minimax,MiniMax-M2.7",
+    "longContextThreshold": 60000
+  },
+  "fallback": {
+    "think": [
+      "cloudflare-zai,glm-5.1",
+      "cloudflare-minimax,MiniMax-M2.7"
+    ],
+    "background": [
+      "cloudflare-minimax,MiniMax-M2.7"
+    ],
+    "longContext": [
+      "cloudflare-minimax,MiniMax-M2.7"
+    ],
+    "default": [
+      "cloudflare-minimax,MiniMax-M2.7"
+    ]
+  },
+  "CUSTOM_ROUTER_PATH": ""
+}

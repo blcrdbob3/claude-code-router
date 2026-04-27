@@ -54,9 +54,8 @@ The routing logic determines which model a request should be sent to:
 - **Custom routing**: Loads custom JavaScript router function via `CUSTOM_ROUTER_PATH`
 - **Built-in scenario routing**:
   - `background`: Background tasks (typically lightweight models)
-  - `think`: Thinking-intensive tasks (Plan Mode)
+  - `think`: Thinking-intensive tasks (Plan Mode, triggers when `enable_thinking`, `thinking.type`, or `thinking` field present)
   - `longContext`: Long context (exceeds `longContextThreshold` tokens)
-  - `webSearch`: Web search tasks
 
 Token calculation uses `tiktoken` (cl100k_base) to estimate request size.
 
@@ -126,10 +125,11 @@ Two separate logging systems:
 
 ## CLI Commands
 
+**Important**: Never use `ccr stop`. Always use `ccr restart` to reload after changes.
+
 ```bash
 ccr start      # Start server
-ccr stop       # Stop server
-ccr restart   # Restart server (always use this instead of stop + start)
+ccr restart    # Restart server (ALWAYS use instead of stop + start)
 ccr status     # Show status
 ccr code       # Execute claude command
 ccr model      # Interactive model selection and configuration

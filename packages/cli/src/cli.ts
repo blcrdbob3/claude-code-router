@@ -330,7 +330,7 @@ async function main() {
           console.log(
             "Service startup timeout, trying to start with default configuration..."
           );
-          import { initDir, writeConfigFile, backupConfigFile } from "./utils";
+          const { initDir, writeConfigFile, backupConfigFile } = await import("./utils");
 
           try {
             // Initialize directories
