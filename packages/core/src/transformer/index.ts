@@ -18,6 +18,7 @@ import { OpenAITransformer } from "./openai.transformer";
 import { CustomParamsTransformer } from "./customparams.transformer";
 import { VercelTransformer } from "./vercel.transformer";
 import { OpenAIResponsesTransformer } from "./openai.responses.transformer";
+import { OutputConfigTransformer } from "./outputconfig.transformer";
 import { ForceReasoningTransformer } from "./forcereasoning.transformer"
 
 export default {
@@ -41,5 +42,6 @@ export default {
   CustomParamsTransformer,
   VercelTransformer,
   OpenAIResponsesTransformer,
-  ForceReasoningTransformer
+  ForceReasoningTransformer,
+  OutputConfigTransformer
 };
