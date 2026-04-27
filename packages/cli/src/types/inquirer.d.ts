@@ -1,6 +1,5 @@
 // Type declarations for @inquirer packages
 declare module '@inquirer/input' {
-  import { DistinctChoice } from '@inquirer/core';
   interface PromptConfig {
     message: string;
     default?: string;

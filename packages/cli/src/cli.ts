@@ -220,14 +220,14 @@ async function main() {
         if (existsSync(REFERENCE_COUNT_FILE)) {
           try {
             fs.unlinkSync(REFERENCE_COUNT_FILE);
-          } catch (e) {
+          } catch {
             // Ignore cleanup errors
           }
         }
         console.log(
           "claude code router service has been successfully stopped."
         );
-      } catch (e) {
+      } catch {
         console.log(
           "Failed to stop the service. It may have already been stopped."
         );
@@ -237,7 +237,7 @@ async function main() {
     case "status":
       await showStatus();
       break;
-    case "statusline":
+    case "statusline": {
       // Read JSON input from stdin
       let inputData = "";
       process.stdin.setEncoding("utf-8");
@@ -261,6 +261,7 @@ async function main() {
         }
       });
       break;
+    }
     // ADD THIS CASE
     case "model":
       await runModelSelector();
@@ -268,10 +269,11 @@ async function main() {
     case "preset":
       await handlePresetCommand(process.argv.slice(3));
       break;
-    case "install":
+    case "install": {
       const presetName = process.argv[3];
       await handleInstallCommand(presetName);
       break;
+    }
     case "activate":
     case "env":
       await activateCommand();
@@ -306,7 +308,7 @@ async function main() {
         executeCodeCommand(codeArgs);
       }
       break;
-    case "ui":
+    case "ui": {
       // Check if service is running
       if (!isRunning) {
         console.log("Service not running, starting service...");
@@ -328,11 +330,7 @@ async function main() {
           console.log(
             "Service startup timeout, trying to start with default configuration..."
           );
-          const {
-            initDir,
-            writeConfigFile,
-            backupConfigFile,
-          } = require("./utils");
+          import { initDir, writeConfigFile, backupConfigFile } from "./utils";
 
           try {
             // Initialize directories
@@ -425,6 +423,7 @@ async function main() {
         }
       });
       break;
+    }
     case "-v":
     case "version":
       console.log(`claude-code-router version: ${version}`);

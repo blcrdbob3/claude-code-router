@@ -12,7 +12,7 @@ import { SSEParserTransform } from "./utils/SSEParser.transform";
 import { SSESerializerTransform } from "./utils/SSESerializer.transform";
 import { rewriteStream } from "./utils/rewriteStream";
 import JSON5 from "json5";
-import { IAgent, ITool } from "./agents/type";
+import { IAgent } from "./agents/type";
 import agentsManager from "./agents";
 import { EventEmitter } from "node:events";
 import { pluginManager, tokenSpeedPlugin } from "@musistudio/llms";
@@ -200,7 +200,7 @@ async function getServer(options: RunOptions = {}) {
       apiKeyAuth(config)(req, reply, done).catch(reject);
     });
   });
-  serverInstance.addHook("preHandler", async (req: any, reply: any) => {
+  serverInstance.addHook("preHandler", async (req: any, _reply: any) => {
     const url = new URL(`http://127.0.0.1${req.url}`);
     req.pathname = url.pathname;
     if (req.pathname.endsWith("/v1/messages") && req.pathname !== "/v1/messages") {
@@ -208,7 +208,7 @@ async function getServer(options: RunOptions = {}) {
     }
   })
 
-  serverInstance.addHook("preHandler", async (req: any, reply: any) => {
+  serverInstance.addHook("preHandler", async (req: any, _reply: any) => {
     if (req.pathname.endsWith("/v1/messages")) {
       const useAgents = []
 
@@ -390,7 +390,9 @@ async function getServer(options: RunOptions = {}) {
               try {
                 const message = JSON.parse(str);
                 sessionUsageCache.put(req.sessionId, message.usage);
-              } catch {}
+              } catch {
+                // Ignore malformed JSON in stream
+              }
             }
           } catch (readError: any) {
             if (readError.name === 'AbortError' || readError.code === 'ERR_STREAM_PREMATURE_CLOSE') {

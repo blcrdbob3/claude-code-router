@@ -1,5 +1,4 @@
 import fs from "node:fs/promises";
-import readline from "node:readline";
 import JSON5 from "json5";
 import path from "node:path";
 import { createHash } from "node:crypto";
@@ -10,10 +9,9 @@ import {
   PLUGINS_DIR,
   PRESETS_DIR,
   REFERENCE_COUNT_FILE,
-  readPresetFile,
 } from "@CCR/shared";
 import { getServer } from "@CCR/server";
-import { writeFileSync, existsSync, readFileSync, mkdirSync } from "fs";
+import { writeFileSync, existsSync, readFileSync } from "fs";
 import { checkForUpdates, performUpdate } from "./update";
 import { version } from "../../package.json";
 import { spawn } from "child_process";
@@ -52,28 +50,6 @@ export const initDir = async () => {
   await ensureDir(PLUGINS_DIR);
   await ensureDir(PRESETS_DIR);
   await ensureDir(path.join(HOME_DIR, "logs"));
-};
-
-const createReadline = () => {
-  return readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-};
-
-const question = (query: string): Promise<string> => {
-  return new Promise((resolve) => {
-    const rl = createReadline();
-    rl.question(query, (answer) => {
-      rl.close();
-      resolve(answer);
-    });
-  });
-};
-
-const confirm = async (query: string): Promise<boolean> => {
-  const answer = await question(query);
-  return answer.toLowerCase() !== "n";
 };
 
 export const readConfigFile = async () => {
@@ -118,10 +94,9 @@ export const readConfigFile = async () => {
             "Please edit this file with your actual configuration."
         );
         return config
-      } catch (error: any) {
+      } catch {
         console.error(
-            "Failed to create default configuration:",
-            error.message
+            "Failed to create default configuration"
         );
         process.exit(1);
       }
@@ -183,7 +158,7 @@ export const initConfig = async () => {
   return config;
 };
 
-export const run = async (args: string[] = []) => {
+export const run = async (_args: string[] = []) => {
   const isRunning = isServiceRunning()
   if (isRunning) {
     console.log('claude-code-router server is running');
@@ -226,12 +201,12 @@ export const restartService = async () => {
     if (existsSync(REFERENCE_COUNT_FILE)) {
       try {
         await fs.unlink(REFERENCE_COUNT_FILE);
-      } catch (e) {
+      } catch {
         // Ignore cleanup errors
       }
     }
     console.log("claude code router service has been stopped.");
-  } catch (e) {
+  } catch {
     console.log("Service was not running or failed to stop.");
     cleanupPidFile();
   }

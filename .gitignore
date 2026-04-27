@@ -6,12 +6,13 @@ dist
 .DS_Store
 .vscode
 tsconfig.tsbuildinfo
+.eslintcache
 
 # Documentation build output
 docs/build
 docs/.docusaurus
 
 # Claude Code
-.mcp.json
+.claude/
 .serena/
-claude-docs/
+.mcp.json

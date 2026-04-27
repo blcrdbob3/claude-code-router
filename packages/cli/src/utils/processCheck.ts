@@ -1,14 +1,14 @@
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'fs';
 import { PID_FILE, REFERENCE_COUNT_FILE } from '@CCR/shared';
 import { readConfigFile } from '.';
 import find from 'find-process';
-import { execSync } from 'child_process'; // 引入 execSync 来执行命令行
+import { execSync } from 'child_process';
 
 export async function isProcessRunning(pid: number): Promise<boolean> {
     try {
         const processes = await find('pid', pid);
         return processes.length > 0;
-    } catch (error) {
+    } catch {
         return false;
     }
 }
@@ -52,7 +52,7 @@ export function isServiceRunning(): boolean {
             cleanupPidFile();
             return false;
         }
-    } catch (e) {
+    } catch {
         // 读取文件失败
         return false;
     }
@@ -83,7 +83,7 @@ export function isServiceRunning(): boolean {
             process.kill(pid, 0);
             return true; // 如果没有抛出异常，说明进程存在
         }
-    } catch (e) {
+    } catch {
         // 捕获到异常，说明进程不存在 (无论是 kill 还是 execSync 失败)
         // 清理掉无效的 PID 文件
         cleanupPidFile();
@@ -98,9 +98,8 @@ export function savePid(pid: number) {
 export function cleanupPidFile() {
     if (existsSync(PID_FILE)) {
         try {
-            const fs = require('fs');
-            fs.unlinkSync(PID_FILE);
-        } catch (e) {
+            unlinkSync(PID_FILE);
+        } catch {
             // Ignore cleanup errors
         }
     }
@@ -114,7 +113,7 @@ export function getServicePid(): number | null {
     try {
         const pid = parseInt(readFileSync(PID_FILE, 'utf-8'));
         return isNaN(pid) ? null : pid;
-    } catch (e) {
+    } catch {
         return null;
     }
 }
@@ -146,7 +145,7 @@ export async function closeService() {
             try {
                 // Kill the service process
                 process.kill(pid, 'SIGTERM');
-            } catch (e) {
+            } catch {
                 // Ignore kill errors
             }
         }

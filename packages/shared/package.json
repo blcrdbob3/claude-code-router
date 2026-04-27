@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "node ../../scripts/build-shared.js"
+    "build": "node ../../scripts/build-shared.js",
+    "lint": "eslint src --ext .ts"
   },
   "keywords": [
     "claude",
@@ -24,7 +25,10 @@
     "@types/adm-zip": "^0.5.7",
     "@types/archiver": "^7.0.0",
     "@types/node": "^24.0.15",
+    "@typescript-eslint/eslint-plugin": "^8.59.0",
+    "@typescript-eslint/parser": "^8.59.0",
     "esbuild": "^0.25.1",
+    "eslint": "^9.39.2",
     "typescript": "^5.8.2"
   }
 }

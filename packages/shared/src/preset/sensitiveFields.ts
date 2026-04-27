@@ -63,28 +63,6 @@ function isEnvPlaceholder(value: any): boolean {
 }
 
 /**
- * Extract variable name from environment variable placeholder
- * @param value Environment variable value (e.g., $VAR or ${VAR})
- */
-function extractEnvVarName(value: string): string | null {
-  const trimmed = value.trim();
-
-  // Match ${VAR_NAME} format
-  const bracedMatch = trimmed.match(/^\$\{([A-Z_][A-Z0-9_]*)\}$/);
-  if (bracedMatch) {
-    return bracedMatch[1];
-  }
-
-  // Match $VAR_NAME format
-  const unbracedMatch = trimmed.match(/^\$([A-Z_][A-Z0-9_]*)$/);
-  if (unbracedMatch) {
-    return unbracedMatch[1];
-  }
-
-  return null;
-}
-
-/**
  * Recursively traverse object to identify and sanitize sensitive fields
  * @param config Configuration object
  * @param path Current field path
@@ -133,8 +111,6 @@ function sanitizeObject(
           if (pathParts[i] === 'Providers' || pathParts[i] === 'transformers') {
             // Find name field
             if (i + 1 < pathParts.length && pathParts[i + 1].match(/^\d+$/)) {
-              // This is array index, find name field at same level
-              const parentPath = pathParts.slice(0, i + 2).join('.');
               // Find name in current context
               const context = config;
               if (context.name) {

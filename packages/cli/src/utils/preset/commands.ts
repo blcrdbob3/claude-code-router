@@ -51,32 +51,30 @@ async function listPresets(): Promise<void> {
       const manifest = JSON5.parse(content);
 
       // Extract metadata fields from manifest
-      const { Providers, Router, PORT, HOST, API_TIMEOUT_MS, PROXY_URL, LOG, LOG_LEVEL, StatusLine, NON_INTERACTIVE_MODE, ...metadata } = manifest;
-
-      const name = metadata.name || dirName;
-      const description = metadata.description || '';
-      const author = metadata.author || '';
-      const version = metadata.version;
+      const presetDisplayName = manifest.name || dirName;
+      const presetDescription = manifest.description || '';
+      const presetAuthor = manifest.author || '';
+      const presetVersion = manifest.version;
 
       // Display preset name
-      if (version) {
-        console.log(`${GREEN}•${RESET} ${BOLDCYAN}${name}${RESET} (v${version})`);
+      if (presetVersion) {
+        console.log(`${GREEN}•${RESET} ${BOLDCYAN}${presetDisplayName}${RESET} (v${presetVersion})`);
       } else {
-        console.log(`${GREEN}•${RESET} ${BOLDCYAN}${name}${RESET}`);
+        console.log(`${GREEN}•${RESET} ${BOLDCYAN}${presetDisplayName}${RESET}`);
       }
 
       // Display description
-      if (description) {
-        console.log(`  ${description}`);
+      if (presetDescription) {
+        console.log(`  ${presetDescription}`);
       }
 
       // Display author
-      if (author) {
-        console.log(`  ${DIM}by ${author}${RESET}`);
+      if (presetAuthor) {
+        console.log(`  ${DIM}by ${presetAuthor}${RESET}`);
       }
 
       console.log('');
-    } catch (error) {
+    } catch {
       console.log(`${YELLOW}•${RESET} ${dirName}`);
       console.log(`  ${DIM}(Error reading preset)${RESET}\n`);
     }
@@ -171,7 +169,7 @@ export async function handlePresetCommand(args: string[]): Promise<void> {
   const subCommand = args[0];
 
   switch (subCommand) {
-    case 'export':
+    case 'export': {
       const presetName = args[1];
       if (!presetName) {
         console.error('\nError: Preset name is required\n');
@@ -197,8 +195,9 @@ export async function handlePresetCommand(args: string[]): Promise<void> {
 
       await exportPresetCli(presetName, options);
       break;
+    }
 
-    case 'install':
+    case 'install': {
       const source = args[1];
       if (!source) {
         console.error('\nError: Preset source is required\n');
@@ -208,6 +207,7 @@ export async function handlePresetCommand(args: string[]): Promise<void> {
 
       await installPresetCli(source, {});
       break;
+    }
 
     case 'list':
       await listPresets();
@@ -215,7 +215,7 @@ export async function handlePresetCommand(args: string[]): Promise<void> {
 
     case 'delete':
     case 'rm':
-    case 'remove':
+    case 'remove': {
       const deleteName = args[1];
       if (!deleteName) {
         console.error('\nError: Preset name is required\n');
@@ -224,8 +224,9 @@ export async function handlePresetCommand(args: string[]): Promise<void> {
       }
       await deletePreset(deleteName);
       break;
+    }
 
-    case 'info':
+    case 'info': {
       const infoName = args[1];
       if (!infoName) {
         console.error('\nError: Preset name is required\n');
@@ -234,6 +235,7 @@ export async function handlePresetCommand(args: string[]): Promise<void> {
       }
       await showPresetInfo(infoName);
       break;
+    }
 
     default:
       console.error(`\nError: Unknown preset command "${subCommand}"\n`);

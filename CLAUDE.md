@@ -4,9 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Claude Code Router is a tool that routes Claude Code requests to different LLM providers. It uses a Monorepo architecture with four main packages:
+Claude Code Router is a tool that routes Claude Code requests to different LLM providers. Monorepo with five packages:
 
-- **cli** (`@musistudio/claude-code-router`): Command-line tool providing the `ccr` command
+- **cli** (`@CCR/cli`): Command-line tool providing the `ccr` command
+- **core** (`@musistudio/llms`): Routing logic, transformers, token calculation (external dep)
 - **server** (`@CCR/server`): Core server handling API routing and transformations
 - **shared** (`@CCR/shared`): Shared constants, utilities, and preset management
 - **ui** (`@CCR/ui`): Web management interface (React + Vite)
@@ -22,14 +23,19 @@ pnpm build
 ```bash
 pnpm build:cli      # Build CLI
 pnpm build:server   # Build Server
-pnpm build:ui       # Build UI
+pnpm build:ui       # Build UI (tsc -b && vite build)
 ```
 
 ### Development mode
 ```bash
-pnpm dev:cli        # Develop CLI (ts-node)
-pnpm dev:server     # Develop Server (ts-node)
-pnpm dev:ui         # Develop UI (Vite)
+pnpm dev:cli        # ts-node CLI dev
+pnpm dev:server      # ts-node Server dev
+pnpm dev:ui         # Vite UI dev
+```
+
+### Type check
+```bash
+pnpm typecheck      # tsc --noEmit
 ```
 
 ### Publish
@@ -39,7 +45,7 @@ pnpm release        # Build and publish all packages
 
 ## Core Architecture
 
-### 1. Routing System (packages/server/src/utils/router.ts)
+### 1. Routing System (packages/core/src/utils/router.ts)
 
 The routing logic determines which model a request should be sent to:
 
@@ -51,21 +57,22 @@ The routing logic determines which model a request should be sent to:
   - `think`: Thinking-intensive tasks (Plan Mode)
   - `longContext`: Long context (exceeds `longContextThreshold` tokens)
   - `webSearch`: Web search tasks
-  - `image`: Image-related tasks
 
 Token calculation uses `tiktoken` (cl100k_base) to estimate request size.
 
-### 2. Transformer System
+### 2. Transformer System (packages/core/src/)
 
-The project uses the `@musistudio/llms` package (external dependency) to handle request/response transformations. Transformers adapt to different provider API differences:
+The `@musistudio/llms` package handles request/response transformations. Transformers adapt to different provider API differences:
 
-- Built-in transformers: `anthropic`, `deepseek`, `gemini`, `openrouter`, `groq`, `maxtoken`, `tooluse`, `reasoning`, `enhancetool`, etc.
+- Built-in transformers: `anthropic`, `deepseek`, `gemini`, `openrouter`, `groq`, `maxtoken`, `tooluse`, `reasoning`, `enhancetool`, `cleancache`, `sampling`, `vertex-gemini`
 - Custom transformers: Load external plugins via `transformers` array in `config.json`
 
 Transformer configuration supports:
 - Global application (provider level)
 - Model-specific application
 - Option passing (e.g., `max_tokens` parameter for `maxtoken`)
+- `skipTransform` per request to bypass transformer pipeline
+- `authHeader` for custom authorization headers
 
 ### 3. Agent System (packages/server/src/agents/)
 
@@ -74,8 +81,7 @@ Agents are pluggable feature modules that can:
 - Modify requests (`reqHandler`)
 - Provide custom tools (`tools`)
 
-Built-in agents:
-- **imageAgent**: Handles image-related tasks
+Built-in agents: none (imageAgent removed in recent commits)
 
 Agent tool call flow:
 1. Detect and mark agents in `preHandler` hook
@@ -123,7 +129,7 @@ Two separate logging systems:
 ```bash
 ccr start      # Start server
 ccr stop       # Stop server
-ccr restart    # Restart server
+ccr restart   # Restart server (always use this instead of stop + start)
 ccr status     # Show status
 ccr code       # Execute claude command
 ccr model      # Interactive model selection and configuration
@@ -131,6 +137,12 @@ ccr preset     # Manage presets (export, install, list, info, delete)
 ccr activate   # Output shell environment variables (for integration)
 ccr ui         # Open Web UI
 ccr statusline # Integrated statusline (reads JSON from stdin)
+```
+
+### Local Installation
+
+```bash
+ln -s /PATH/TO/claude-code-router/packages/cli/dist/cli.js ~/.local/bin/ccr
 ```
 
 ### Preset Commands
@@ -225,14 +237,14 @@ Key files:
 ## Dependencies
 
 ```
-cli → server → shared
-server → @musistudio/llms (core routing and transformation logic)
-ui (standalone frontend application)
+cli → server → core (@musistudio/llms)
+server → shared
+ui (standalone frontend)
 ```
 
 ## Development Notes
 
-1. **Node.js version**: Requires >= 18.0.0
+1. **Node.js version**: Requires >= 20.0.0
 2. **Package manager**: Uses pnpm (monorepo depends on workspace protocol)
 3. **TypeScript**: All packages use TypeScript, but UI package is ESM module
 4. **Build tools**:

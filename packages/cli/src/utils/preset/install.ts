@@ -28,7 +28,6 @@ const RESET = "\x1B[0m";
 const GREEN = "\x1B[32m";
 const BOLDGREEN = "\x1B[1m\x1B[32m";
 const YELLOW = "\x1B[33m";
-const BOLDYELLOW = "\x1B[1m\x1B[33m";
 const BOLDCYAN = "\x1B[1m\x1B[36m";
 const DIM = "\x1B[2m";
 

@@ -8,8 +8,6 @@ import { applyPresetCli } from './preset/install';
 
 // ANSI color codes
 const RESET = "\x1B[0m";
-const GREEN = "\x1B[32m";
-const YELLOW = "\x1B[33m";
 const BOLDGREEN = "\x1B[1m\x1B[32m";
 const BOLDYELLOW = "\x1B[1m\x1B[33m";
 const BOLDCYAN = "\x1B[1m\x1B[36m";

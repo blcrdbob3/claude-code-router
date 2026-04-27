@@ -1,10 +1,8 @@
 import fs from "node:fs/promises";
-import readline from "node:readline";
 import JSON5 from "json5";
 import path from "node:path";
 import {
   CONFIG_FILE,
-  DEFAULT_CONFIG,
   HOME_DIR,
   PLUGINS_DIR,
 } from "@CCR/shared";
@@ -41,28 +39,6 @@ export const initDir = async () => {
   await ensureDir(HOME_DIR);
   await ensureDir(PLUGINS_DIR);
   await ensureDir(path.join(HOME_DIR, "logs"));
-};
-
-const createReadline = () => {
-  return readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-};
-
-const question = (query: string): Promise<string> => {
-  return new Promise((resolve) => {
-    const rl = createReadline();
-    rl.question(query, (answer) => {
-      rl.close();
-      resolve(answer);
-    });
-  });
-};
-
-const confirm = async (query: string): Promise<boolean> => {
-  const answer = await question(query);
-  return answer.toLowerCase() !== "n";
 };
 
 export const readConfigFile = async () => {

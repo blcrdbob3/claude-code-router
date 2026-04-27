@@ -7,7 +7,8 @@
   },
   "scripts": {
     "build": "node ../../scripts/build-cli.js",
-    "dev": "ts-node src/cli.ts"
+    "dev": "ts-node src/cli.ts",
+    "lint": "eslint src --ext .ts"
   },
   "keywords": [
     "claude",
@@ -23,9 +24,12 @@
     "@inquirer/prompts": "^5.0.0",
     "@types/archiver": "^7.0.0",
     "@types/node": "^24.0.15",
+    "@typescript-eslint/eslint-plugin": "^8.59.0",
+    "@typescript-eslint/parser": "^8.59.0",
     "adm-zip": "^0.5.16",
     "archiver": "^7.0.1",
     "esbuild": "^0.25.1",
+    "eslint": "^9.39.2",
     "find-process": "^2.0.0",
     "minimist": "^1.2.8",
     "openurl": "^1.1.1",

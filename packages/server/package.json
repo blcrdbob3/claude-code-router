@@ -6,7 +6,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "node ../../scripts/build-server.js",
-    "dev": "ts-node src/index.ts"
+    "dev": "ts-node src/index.ts",
+    "lint": "eslint src --ext .ts"
   },
   "keywords": [
     "claude",
@@ -33,7 +34,10 @@
     "@CCR/shared": "workspace:*",
     "@types/adm-zip": "^0.5.7",
     "@types/node": "^24.0.15",
+    "@typescript-eslint/eslint-plugin": "^8.59.0",
+    "@typescript-eslint/parser": "^8.59.0",
     "esbuild": "^0.25.1",
+    "eslint": "^9.39.2",
     "fastify": "^5.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"

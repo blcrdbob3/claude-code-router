@@ -11,7 +11,6 @@ import {
   shouldShowField,
   resolveOptions,
   validateInput,
-  getDefaultValue,
   sortFieldsByDependencies,
   getAffectedFields,
 } from '@CCR/shared';
@@ -148,12 +147,13 @@ async function promptField(
         default: field.defaultValue,
       });
 
-    case InputType.NUMBER:
+    case InputType.NUMBER: {
       const numStr = await input({
         message,
         default: String(field.defaultValue ?? 0),
       });
       return Number(numStr);
+    }
 
     case InputType.CONFIRM:
       return await confirm({

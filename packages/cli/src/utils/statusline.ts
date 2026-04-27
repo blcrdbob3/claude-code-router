@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { execSync } from "child_process";
 import { tmpdir } from "node:os";
-import { CONFIG_FILE, HOME_DIR, readPresetFile, getPresetDir, loadConfigFromManifest } from "@CCR/shared";
+import { CONFIG_FILE, readPresetFile, getPresetDir, loadConfigFromManifest } from "@CCR/shared";
 import JSON5 from "json5";
 
 export interface StatusLineModuleConfig {
@@ -112,7 +112,6 @@ const COLORS: Record<string, string> = {
 
 // Use TrueColor (24-bit color) to support hexadecimal colors
 const TRUE_COLOR_PREFIX = "\x1b[38;2;";
-const TRUE_COLOR_BG_PREFIX = "\x1b[48;2;";
 
 // Convert hexadecimal color to RGB format
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
@@ -168,8 +167,8 @@ async function executeScript(scriptPath: string, variables: Record<string, strin
         // Check if file exists
         await fs.access(scriptPath);
 
-        // Use require to dynamically load script module
-        const scriptModule = require(scriptPath);
+        // Use dynamic import to load script module
+        const scriptModule = await import(scriptPath);
 
         // If export is a function, call it with variables
         if (typeof scriptModule === 'function') {
@@ -323,7 +322,8 @@ const SIMPLE_THEME: StatusLineThemeConfig = {
 };
 
 // Full theme configuration - showcasing all available modules
-const FULL_THEME: StatusLineThemeConfig = {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _FULL_THEME: StatusLineThemeConfig = {
     modules: [
         {
             type: "workDir",
@@ -475,7 +475,7 @@ async function getTokenSpeedStats(sessionId: string): Promise<{
         }
 
         return null;
-    } catch (error) {
+    } catch {
         // Silently fail on error
         return null;
     }
@@ -507,7 +507,7 @@ async function getProjectThemeConfig(): Promise<{ theme: StatusLineThemeConfig |
                 return { theme: config.StatusLine[currentStyle], style: currentStyle };
             }
         }
-    } catch (error) {
+    } catch {
         // Return null if reading fails
         // console.error("Failed to read theme config:", error);
     }
@@ -538,7 +538,7 @@ async function getPresetThemeConfig(presetName: string): Promise<{ theme: Status
                 return { theme: config.StatusLine[currentStyle], style: currentStyle };
             }
         }
-    } catch (error) {
+    } catch {
         // Return null if reading fails
         // console.error("Failed to read preset theme config:", error);
     }
@@ -642,7 +642,7 @@ export async function parseStatusLineData(input: StatusLineInput, presetName?: s
             })
                 .toString()
                 .trim();
-        } catch (error) {
+        } catch {
             // If not a Git repository or retrieval fails, ignore error
         }
 
@@ -667,7 +667,7 @@ export async function parseStatusLineData(input: StatusLineInput, presetName?: s
                     }
                     break;
                 }
-            } catch (parseError) {
+            } catch {
                 // Ignore parse errors, continue searching
                 continue;
             }
@@ -698,7 +698,7 @@ export async function parseStatusLineData(input: StatusLineInput, presetName?: s
                         model = defaultModel.trim();
                     }
                 }
-            } catch (configError) {
+            } catch {
                 // If configuration file reading fails, ignore error
             }
         }
@@ -779,7 +779,7 @@ export async function parseStatusLineData(input: StatusLineInput, presetName?: s
         } else {
             return await renderDefaultStyle(theme, variables);
         }
-    } catch (error) {
+    } catch {
         // Return empty string on error
         return "";
     }

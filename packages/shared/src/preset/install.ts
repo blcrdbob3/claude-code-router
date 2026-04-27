@@ -395,8 +395,6 @@ export async function listPresets(): Promise<PresetInfo[]> {
         const manifest = JSON5.parse(content) as ManifestFile;
 
         // Get directory creation time
-        const stats = await fs.stat(presetDir);
-
         presets.push({
           name: manifest.name || presetName,
           version: manifest.version,

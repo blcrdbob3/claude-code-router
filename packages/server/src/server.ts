@@ -2,7 +2,7 @@ import Server, { calculateTokenCount, TokenizerService } from "@musistudio/llms"
 import { readConfigFile, writeConfigFile, backupConfigFile } from "./utils";
 import { join } from "path";
 import fastifyStatic from "@fastify/static";
-import { readdirSync, statSync, readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync, rmSync } from "fs";
+import { readdirSync, statSync, readFileSync, writeFileSync, existsSync, unlinkSync, rmSync } from "fs";
 import { homedir } from "os";
 import {
   getPresetDir,
@@ -12,10 +12,8 @@ import {
   isPresetInstalled,
   extractPreset,
   HOME_DIR,
-  extractMetadata,
   loadConfigFromManifest,
   downloadPresetToTemp,
-  getTempDir,
   findMarketPresetByName,
   getMarketPresets,
   type PresetFile,
@@ -35,7 +33,7 @@ export const createServer = async (config: any): Promise<any> => {
     },
   });
 
-  app.post("/v1/messages/count_tokens", async (req: any, reply: any) => {
+  app.post("/v1/messages/count_tokens", async (req: any, _reply: any) => {
     const {messages, tools, system, model} = req.body;
     const tokenizerService = (app as any)._server!.tokenizerService as TokenizerService;
 
@@ -83,11 +81,11 @@ export const createServer = async (config: any): Promise<any> => {
   });
 
   // Add endpoint to read config.json with access control
-  app.get("/api/config", async (req: any, reply: any) => {
+  app.get("/api/config", async (_req: any, _reply: any) => {
     return await readConfigFile();
   });
 
-  app.get("/api/transformers", async (req: any, reply: any) => {
+  app.get("/api/transformers", async (_req: any, _reply: any) => {
     const transformers =
       (app as any)._server!.transformerService.getAllTransformers();
     const transformerList = Array.from(transformers.entries()).map(
@@ -100,7 +98,7 @@ export const createServer = async (config: any): Promise<any> => {
   });
 
   // Add endpoint to save config.json with access control
-  app.post("/api/config", async (req: any, reply: any) => {
+  app.post("/api/config", async (req: any, _reply: any) => {
     const newConfig = req.body;
 
     // Backup existing config file if it exists
@@ -233,8 +231,17 @@ export const createServer = async (config: any): Promise<any> => {
           const content = readFileSync(manifestPath, 'utf-8');
           const manifest = JSON.parse(content);
 
-          // Extract metadata fields
-          const { Providers, Router, PORT, HOST, API_TIMEOUT_MS, PROXY_URL, LOG, LOG_LEVEL, StatusLine, NON_INTERACTIVE_MODE, ...metadata } = manifest;
+          // Strip config fields from manifest to get metadata only
+          const configKeys = new Set([
+            'Providers', 'Router', 'PORT', 'HOST', 'API_TIMEOUT_MS',
+            'PROXY_URL', 'LOG', 'LOG_LEVEL', 'StatusLine', 'NON_INTERACTIVE_MODE',
+          ]);
+          const metadata: Record<string, any> = {};
+          for (const [key, value] of Object.entries(manifest)) {
+            if (!configKeys.has(key)) {
+              metadata[key] = value;
+            }
+          }
 
           presets.push({
             id: dirName,  // Use directory name as unique identifier

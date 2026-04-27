@@ -20,7 +20,6 @@ import AdmZip from 'adm-zip';
 const RESET = "\x1B[0m";
 const GREEN = "\x1B[32m";
 const BOLDCYAN = "\x1B[1m\x1B[36m";
-const BOLDYELLOW = "\x1B[1m\x1B[33m";
 
 /**
  * Parse GitHub repository URL or name

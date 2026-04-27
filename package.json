@@ -18,6 +18,8 @@
     "dev:ui": "pnpm --filter @CCR/ui dev",
     "dev:core": "pnpm --filter @musistudio/llms dev",
     "dev:docs": "pnpm --filter claude-code-router-docs start",
+    "lint": "node --max-old-space-size=4096 node_modules/eslint/bin/eslint.js . --cache",
+    "lint:packages": "pnpm -r --filter='./packages/*' exec \"node --max-old-space-size=4096 ../../node_modules/eslint/bin/eslint.js src --ext .ts --cache\"",
     "serve:docs": "pnpm --filter claude-code-router-docs serve"
   },
   "bin": {
@@ -33,10 +35,14 @@
   "author": "musistudio",
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@types/node": "^24.0.15",
     "esbuild": "^0.25.1",
+    "eslint": "^9.39.2",
+    "globals": "^15.15.0",
     "shx": "^0.4.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.50.1"
   },
   "pnpm": {
     "overrides": {
