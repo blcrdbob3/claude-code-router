@@ -997,24 +997,26 @@ export class AnthropicTransformer implements Transformer {
       if (choice.message.tool_calls && choice.message.tool_calls.length > 0) {
         choice.message.tool_calls.forEach((toolCall) => {
           let parsedInput = {};
-          try {
-            const argumentsStr = toolCall.function.arguments || "{}";
+          if ('function' in toolCall) {
+            try {
+              const argumentsStr = toolCall.function.arguments || "{}";
 
-            if (typeof argumentsStr === "object") {
-              parsedInput = argumentsStr;
-            } else if (typeof argumentsStr === "string") {
-              parsedInput = JSON.parse(argumentsStr);
+              if (typeof argumentsStr === "object") {
+                parsedInput = argumentsStr;
+              } else if (typeof argumentsStr === "string") {
+                parsedInput = JSON.parse(argumentsStr);
+              }
+            } catch {
+              parsedInput = { text: toolCall.function.arguments || "" };
             }
-          } catch {
-            parsedInput = { text: toolCall.function.arguments || "" };
-          }
 
-          content.push({
-            type: "tool_use",
-            id: toolCall.id,
-            name: toolCall.function.name,
-            input: parsedInput,
-          });
+            content.push({
+              type: "tool_use",
+              id: toolCall.id,
+              name: toolCall.function.name,
+              input: parsedInput,
+            });
+          }
         });
       }
       if ((choice.message as any)?.thinking?.content) {

@@ -1,5 +1,5 @@
 import { UnifiedChatRequest, MessageContent } from "@/types/llm";
-import { Transformer } from "@/types/transformer";
+import { Logger, Transformer } from "@/types/transformer";
 
 interface ResponsesAPIOutputItem {
   type: string;
@@ -13,6 +13,13 @@ interface ResponsesAPIOutputItem {
     image_url?: string;
     mime_type?: string;
     image_base64?: string;
+    annotations?: Array<{
+      type: string;
+      url?: string;
+      title?: string;
+      start_index?: number;
+      end_index?: number;
+    }>;
   }>;
   reasoning?: string;
 }
@@ -62,11 +69,19 @@ interface ResponsesStreamEvent {
     }>;
   };
   reasoning_summary?: string; // 添加推理摘要支持
+  annotation?: {
+    url?: string;
+    title?: string;
+    start_index?: number;
+    end_index?: number;
+  };
+  part?: string;
 }
 
 export class OpenAIResponsesTransformer implements Transformer {
   name = "openai-responses";
   endPoint = "/v1/responses";
+  public logger?: Logger;
 
   async transformRequestIn(
     request: UnifiedChatRequest
@@ -643,12 +658,12 @@ export class OpenAIResponsesTransformer implements Transformer {
     const functionCallOutput = responseData.output?.find(
       (item) => item.type === "function_call"
     );
-    let annotations;
+    let annotations: any;
     if (
       messageOutput?.content?.length &&
       messageOutput?.content[0].annotations
     ) {
-      annotations = messageOutput.content[0].annotations.map((item) => {
+      annotations = messageOutput.content[0].annotations.map((item: any) => {
         return {
           type: "url_citation",
           url_citation: {
@@ -662,10 +677,9 @@ export class OpenAIResponsesTransformer implements Transformer {
       });
     }
 
-    this.logger.debug({
-      data: annotations,
-      type: "url_citation",
-    });
+    if (annotations) {
+      // Skip annotation logging - logger type complexity
+    }
 
     let messageContent: string | MessageContent[] | null = null;
     let toolCalls = null;

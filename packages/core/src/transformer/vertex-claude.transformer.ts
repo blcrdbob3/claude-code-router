@@ -1,5 +1,5 @@
 import { LLMProvider, UnifiedChatRequest } from "../types/llm";
-import { Transformer } from "../types/transformer";
+import { Logger, Transformer } from "../types/transformer";
 import {
   buildRequestBody,
   transformRequestOut,
@@ -30,6 +30,7 @@ async function getAccessToken(): Promise<string> {
 
 export class VertexClaudeTransformer implements Transformer {
   name = "vertex-claude";
+  public logger?: Logger;
 
   async transformRequestIn(
     request: UnifiedChatRequest,

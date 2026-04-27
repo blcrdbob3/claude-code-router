@@ -60,7 +60,7 @@ export class GroqTransformer implements Transformer {
 
           const processLine = (line: string, context: {
             controller: ReadableStreamDefaultController;
-            encoder: typeof TextEncoder;
+            encoder: TextEncoder;
             hasTextContent: () => boolean;
             setHasTextContent: (val: boolean) => void;
             reasoningContent: () => string;

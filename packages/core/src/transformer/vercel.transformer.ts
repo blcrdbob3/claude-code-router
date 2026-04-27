@@ -1,9 +1,10 @@
 import { UnifiedChatRequest } from "@/types/llm";
-import { Transformer, TransformerOptions } from "../types/transformer";
+import { Logger, Transformer, TransformerOptions } from "../types/transformer";
 import { v4 as uuidv4 } from "uuid";
 
 export class VercelTransformer implements Transformer {
   static TransformerName = "vercel";
+  public logger?: Logger;
   endPoint = "/v1/chat/completions";
 
   constructor(private readonly options?: TransformerOptions) {}
@@ -62,6 +63,7 @@ export class VercelTransformer implements Transformer {
 
       const decoder = new TextDecoder();
       const encoder = new TextEncoder();
+      const logger = this.logger;
 
       let hasTextContent = false;
       let reasoningContent = "";
@@ -105,10 +107,7 @@ export class VercelTransformer implements Transformer {
               try {
                 const data = JSON.parse(jsonStr);
                 if (data.usage) {
-                  this.logger?.debug(
-                    { usage: data.usage, hasToolCall },
-                    "usage"
-                  );
+                  // Skip usage logging - logger type complexity
                   data.choices[0].finish_reason = hasToolCall
                     ? "tool_calls"
                     : "stop";

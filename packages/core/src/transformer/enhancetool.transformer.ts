@@ -1,10 +1,12 @@
-import { Transformer } from "@/types/transformer";
+import { Logger, Transformer } from "@/types/transformer";
 import { parseToolArguments } from "@/utils/toolArgumentsParser";
 
 export class EnhanceToolTransformer implements Transformer {
   name = "enhancetool";
+  public logger?: Logger;
 
   async transformResponseOut(response: Response): Promise<Response> {
+    const logger = this.logger;
     if (response.headers.get("Content-Type")?.includes("application/json")) {
       const jsonResponse = await response.json();
       if (jsonResponse?.choices?.[0]?.message?.tool_calls?.length) {
@@ -13,7 +15,7 @@ export class EnhanceToolTransformer implements Transformer {
           if (toolCall.function?.arguments) {
             toolCall.function.arguments = parseToolArguments(
               toolCall.function.arguments,
-              this.logger
+              logger
             );
           }
         }
@@ -71,7 +73,7 @@ export class EnhanceToolTransformer implements Transformer {
           ) => {
             let finalArgs = "";
             try {
-              finalArgs = parseToolArguments(currentToolCall.arguments || "", this.logger);
+              finalArgs = parseToolArguments(currentToolCall.arguments || "", logger);
             } catch (e: any) {
               console.error(
                 `${e.message} ${

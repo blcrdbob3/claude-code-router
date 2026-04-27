@@ -7,6 +7,7 @@ import {
   TokenizerOptions,
 } from "../types/tokenizer";
 import { TiktokenTokenizer } from "../tokenizer/tiktoken-tokenizer";
+import type { TiktokenEncoding } from "tiktoken";
 import { HuggingFaceTokenizer } from "../tokenizer/huggingface-tokenizer";
 import { ApiTokenizer } from "../tokenizer/api-tokenizer";
 
@@ -78,7 +79,7 @@ export class TokenizerService {
       switch (config.type) {
         case "tiktoken":
           tokenizer = new TiktokenTokenizer(
-            config.encoding || "cl100k_base"
+            (config.encoding || "cl100k_base") as TiktokenEncoding
           );
           break;
 

@@ -107,6 +107,28 @@ export interface UnifiedChatRequest {
 
     enabled?: boolean;
   };
+  // Reasoning
+  thinking?: {
+    effort?: string;
+    max_tokens?: number;
+    enabled?: boolean;
+  };
+  enable_thinking?: boolean;
+
+  // Sampling
+  top_p?: number;
+  top_k?: number;
+  repetition_penalty?: number;
+
+  // Streaming
+  stream_options?: {
+    include_usage?: boolean;
+    persistent_predicted_tokens?: boolean;
+  };
+  parallel_tool_calls?: boolean;
+
+  // Tokens
+  max_completion_tokens?: number;
 }
 
 // 统一的响应接口

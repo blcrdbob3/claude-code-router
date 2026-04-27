@@ -21,6 +21,13 @@ export interface TransformerContext {
   [key: string]: any;
 }
 
+export interface Logger {
+  info?: (msg: string) => void;
+  warn?: (msg: string | object) => void;
+  error?: (msg: string | object, ...args: any[]) => void;
+  debug?: (msg: string | object, ...args: any[]) => void;
+}
+
 export type Transformer = {
   transformRequestIn?: (
     request: UnifiedChatRequest,
@@ -37,7 +44,7 @@ export type Transformer = {
   endPoint?: string;
   name?: string;
   auth?: (request: any, provider: LLMProvider, context: TransformerContext) => Promise<any>;
-  
+
   // Logger for transformer
-  logger?: any;
+  logger?: Logger;
 };

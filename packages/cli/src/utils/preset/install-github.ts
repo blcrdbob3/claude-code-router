@@ -14,6 +14,7 @@ import {
   manifestToPresetFile,
   type PresetFile,
 } from '@CCR/shared';
+// @ts-ignore - adm-zip lacks type declarations
 import AdmZip from 'adm-zip';
 
 // ANSI color codes
@@ -53,7 +54,7 @@ async function loadPresetFromZip(zipFile: string): Promise<PresetFile> {
   if (!entry) {
     const entries = zip.getEntries();
     // Find any manifest.json file
-    entry = entries.find(e => e.entryName.includes('manifest.json')) || null;
+    entry = entries.find((e: AdmZip.IZipEntry) => e.entryName.includes('manifest.json')) || null;
   }
 
   if (!entry) {
@@ -141,7 +142,7 @@ export async function installPresetFromMarket(presetName: string): Promise<{ nam
     const manifest = await readManifestFromDir(targetDir);
 
     // Add repo information to manifest
-    manifest.repository = marketPreset.repository;
+    manifest.repository = marketPreset.repo;
     if (marketPreset.url) {
       manifest.source = marketPreset.url;
     }

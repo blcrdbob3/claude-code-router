@@ -1,10 +1,16 @@
-import { UnifiedChatRequest } from "../types/llm";
-import { Transformer } from "../types/transformer";
+import { LLMProvider, UnifiedChatRequest } from "@/types/llm";
+import { Logger, Transformer, TransformerContext } from "../types/transformer";
+import { v4 as uuidv4 } from "uuid";
 
 export class TooluseTransformer implements Transformer {
   name = "tooluse";
+  public logger?: Logger;
 
-  transformRequestIn(request: UnifiedChatRequest): UnifiedChatRequest {
+  async transformRequestIn(
+    request: UnifiedChatRequest,
+    _provider?: LLMProvider,
+    _context?: TransformerContext
+  ): Promise<Record<string, any>> {
     request.messages.push({
       role: "system",
       content: `<system-reminder>Tool mode is active. The user expects you to proactively execute the most suitable tool to help complete the task. 
@@ -36,7 +42,7 @@ Examples:
         },
       });
     }
-    return request;
+    return request as Record<string, any>;
   }
 
   async transformResponseOut(response: Response): Promise<Response> {

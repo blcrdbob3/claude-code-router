@@ -41,14 +41,19 @@ export function convertToolsToAnthropic(tools: UnifiedTool[]): AnthropicTool[] {
 export function convertToolsFromOpenAI(
   tools: ChatCompletionTool[]
 ): UnifiedTool[] {
-  return tools.map((tool) => ({
-    type: "function" as const,
-    function: {
-      name: tool.function.name,
-      description: tool.function.description || "",
-      parameters: tool.function.parameters as any,
-    },
-  }));
+  return tools.map((tool) => {
+    if (!("function" in tool)) {
+      return null;
+    }
+    return {
+      type: "function" as const,
+      function: {
+        name: tool.function.name,
+        description: tool.function.description || "",
+        parameters: tool.function.parameters as any,
+      },
+    };
+  }).filter((t): t is UnifiedTool => t !== null);
 }
 
 export function convertToolsFromAnthropic(
@@ -113,7 +118,7 @@ export function convertToOpenAI(
         if (toolResponsesQueue.has(toolCall.id)) {
           const responses = toolResponsesQueue.get(toolCall.id);
 
-          responses.forEach((response) => {
+          responses.forEach((response: any) => {
             messages.push(response);
           });
 
@@ -135,7 +140,7 @@ export function convertToOpenAI(
 
   if (toolResponsesQueue.size > 0) {
     for (const [id, responses] of toolResponsesQueue.entries()) {
-      responses.forEach((response) => {
+      responses.forEach((response: any) => {
         messages.push(response);
       });
     }

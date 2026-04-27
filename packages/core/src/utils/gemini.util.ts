@@ -113,7 +113,7 @@ function flattenTypeArrayToAnyOf(
  * @returns {Object} - The processed schema
  */
 function processJsonSchema(_jsonSchema: any): any {
-  const genAISchema = {};
+  const genAISchema: Record<string, unknown> = {};
   const schemaFieldNames = ["items"];
   const listSchemaFieldNames = ["anyOf"];
   const dictSchemaFieldNames = ["properties"];
@@ -167,7 +167,7 @@ function processJsonSchema(_jsonSchema: any): any {
         // beginning of this function.
         continue;
       }
-      const upperCaseValue = fieldValue.toUpperCase();
+      const upperCaseValue = (fieldValue as string).toUpperCase();
       genAISchema["type"] = Object.values(Type).includes(upperCaseValue)
         ? upperCaseValue
         : Type.TYPE_UNSPECIFIED;
@@ -175,7 +175,7 @@ function processJsonSchema(_jsonSchema: any): any {
       genAISchema[fieldName] = processJsonSchema(fieldValue);
     } else if (listSchemaFieldNames.includes(fieldName)) {
       const listSchemaFieldValue = [];
-      for (const item of fieldValue) {
+      for (const item of fieldValue as any[]) {
         if (item["type"] == "null") {
           genAISchema["nullable"] = true;
           continue;
@@ -184,8 +184,8 @@ function processJsonSchema(_jsonSchema: any): any {
       }
       genAISchema[fieldName] = listSchemaFieldValue;
     } else if (dictSchemaFieldNames.includes(fieldName)) {
-      const dictSchemaFieldValue = {};
-      for (const [key, value] of Object.entries(fieldValue)) {
+      const dictSchemaFieldValue: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(fieldValue as Record<string, unknown>)) {
         dictSchemaFieldValue[key] = processJsonSchema(value);
       }
       genAISchema[fieldName] = dictSchemaFieldValue;
@@ -321,8 +321,9 @@ export function buildRequestBody(
         );
       } else if (message.content && typeof message.content === "object") {
         // Object like { text: "..." }
-        if (message.content.text) {
-          parts.push({ text: message.content.text });
+        const contentObj = message.content as { text?: string };
+        if (contentObj.text) {
+          parts.push({ text: contentObj.text });
         } else {
           parts.push({ text: JSON.stringify(message.content) });
         }
@@ -410,14 +411,19 @@ export function buildRequestBody(
     }
   }
 
-  const body = {
+  const body: {
+    contents: any;
+    tools: any;
+    generationConfig: any;
+    toolConfig?: { functionCallingConfig: Record<string, unknown> };
+  } = {
     contents,
     tools: tools.length ? tools : undefined,
     generationConfig,
   };
 
   if (request.tool_choice) {
-    const toolConfig = {
+    const toolConfig: { functionCallingConfig: Record<string, unknown> } = {
       functionCallingConfig: {},
     };
     if (request.tool_choice === "auto") {
@@ -426,10 +432,10 @@ export function buildRequestBody(
       toolConfig.functionCallingConfig.mode = "none";
     } else if (request.tool_choice === "required") {
       toolConfig.functionCallingConfig.mode = "any";
-    } else if (request.tool_choice?.function?.name) {
+    } else if ((request.tool_choice as any)?.function?.name) {
       toolConfig.functionCallingConfig.mode = "any";
       toolConfig.functionCallingConfig.allowedFunctionNames = [
-        request.tool_choice?.function?.name,
+        (request.tool_choice as any)?.function?.name,
       ];
     }
     body.toolConfig = toolConfig;
@@ -438,9 +444,9 @@ export function buildRequestBody(
   return body;
 }
 
-export function transformRequestOut(
+export async function transformRequestOut(
   request: Record<string, any>
-): UnifiedChatRequest {
+): Promise<UnifiedChatRequest> {
   const contents: ContentListUnion = request.contents;
   const tools: ToolListUnion = request.tools;
   const model: string = request.model;
@@ -494,9 +500,9 @@ export function transformRequestOut(
 
   if (Array.isArray(tools)) {
     unifiedChatRequest.tools = [];
-    tools.forEach((tool) => {
+    tools.forEach((tool: any) => {
       if (Array.isArray(tool.functionDeclarations)) {
-        tool.functionDeclarations.forEach((tool) => {
+        tool.functionDeclarations.forEach((tool: any) => {
           unifiedChatRequest.tools!.push({
             type: "function",
             function: {
@@ -920,7 +926,7 @@ export async function transformResponseOut(
                 }
 
                 if (tool_calls.length > 0) {
-                  tool_calls.forEach((tool) => {
+                  tool_calls.forEach((tool: any) => {
                     contentIndex++;
                     toolCallIndex++;
                     const res = {
@@ -1041,4 +1047,5 @@ export async function transformResponseOut(
       headers: response.headers,
     });
   }
+  return response;
 }

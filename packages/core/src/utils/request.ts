@@ -47,7 +47,11 @@ export function sendUnifiedRequest(
     {
       reqId: context.req.id,
       request: fetchOptions,
-      headers: Object.fromEntries(headers.entries()),
+      headers: (() => {
+        const h: Record<string, string> = {};
+        headers.forEach((v, k) => { h[k] = v; });
+        return h;
+      })(),
       requestUrl: typeof url === "string" ? url : url.toString(),
       useProxy: config.httpsProxy,
     },

@@ -1,5 +1,5 @@
 import { LLMProvider, UnifiedChatRequest } from "../types/llm";
-import { Transformer } from "../types/transformer";
+import { Logger, Transformer } from "../types/transformer";
 import {
   buildRequestBody,
   transformRequestOut,
@@ -8,6 +8,7 @@ import {
 
 export class GeminiTransformer implements Transformer {
   name = "gemini";
+  public logger?: Logger;
 
   endPoint = "/v1beta/models/:modelAndAction";
 

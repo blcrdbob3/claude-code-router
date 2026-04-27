@@ -52,8 +52,5 @@
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=8.0.0"
-  },
-  "dependencies": {
-    "headroom-ai": "^0.1.0"
   }
 }
