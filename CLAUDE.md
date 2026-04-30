@@ -21,107 +21,102 @@ pnpm build
 
 ### Build individual packages
 ```bash
-pnpm build:cli      # Build CLI
-pnpm build:server   # Build Server
-pnpm build:ui       # Build UI (tsc -b && vite build)
+pnpm build:shared    # Uses build-shared.js (esbuild)
+pnpm build:core      # Builds @musistudio/llms external dep
+pnpm build:server    # esbuild server
+pnpm build:cli       # esbuild CLI
+pnpm build:ui        # tsc -b && vite build
 ```
 
 ### Development mode
 ```bash
 pnpm dev:cli        # ts-node CLI dev
 pnpm dev:server      # ts-node Server dev
-pnpm dev:ui         # Vite UI dev
+pnpm dev:ui          # Vite UI dev
 ```
 
-### Type check
+### Lint
 ```bash
-pnpm typecheck      # tsc --noEmit
+pnpm lint           # Root + all packages
+pnpm lint:packages   # Packages only
 ```
 
-### Publish
+## TypeScript
+
+- Root tsconfig.json extends tsconfig.base.json (ES2022, CommonJS, strict)
+- Each package has its own tsconfig.json for its specific settings
+- UI package uses ESM (vite.config.ts + tsconfig.json with module: ESNext)
+- Type definitions for external @musistudio/llms in `packages/server/src/types.d.ts`
+
+## Testing
+
+No test framework configured. Manual verification via:
 ```bash
-pnpm release        # Build and publish all packages
+pnpm build && pnpm dev:server   # Test server
+ccr start && ccr status          # Verify CLI
 ```
 
 ## Core Architecture
 
-### 1. Routing System (packages/core/src/utils/router.ts)
+### Routing Logic
 
-The routing logic determines which model a request should be sent to:
+Determines which model handles a request:
 
-- **Default routing**: Uses `Router.default` configuration
-- **Project-level routing**: Checks `~/.claude/projects/<project-id>/claude-code-router.json`
-- **Custom routing**: Loads custom JavaScript router function via `CUSTOM_ROUTER_PATH`
-- **Built-in scenario routing**:
-  - `background`: Background tasks (typically lightweight models)
-  - `think`: Thinking-intensive tasks (Plan Mode, triggers when `enable_thinking`, `thinking.type`, or `thinking` field present)
-  - `longContext`: Long context (exceeds `longContextThreshold` tokens)
+1. **Custom router** (`CUSTOM_ROUTER_PATH`) — custom JS function
+2. **Project-level** — `~/.claude/projects/<project-id>/claude-code-router.json`
+3. **Built-in scenarios**: `background`, `think` (Plan Mode/thinking), `longContext` (exceeds threshold), `webSearch`
 
-Token calculation uses `tiktoken` (cl100k_base) to estimate request size.
+Token estimation: `tiktoken` (cl100k_base) to count request tokens.
 
-### 2. Transformer System (packages/core/src/)
+### Transformer System (`@musistudio/llms`)
 
-The `@musistudio/llms` package handles request/response transformations. Transformers adapt to different provider API differences:
+Adapts request/response for different provider APIs. Chained via `transformer.use` config:
 
-- Built-in transformers: `anthropic`, `deepseek`, `gemini`, `openrouter`, `groq`, `maxtoken`, `tooluse`, `reasoning`, `enhancetool`, `cleancache`, `sampling`, `vertex-gemini`
-- Custom transformers: Load external plugins via `transformers` array in `config.json`
+- `anthropic`, `deepseek`, `gemini`, `openrouter`, `groq` — provider adapters
+- `maxtoken`, `tooluse`, `reasoning`, `enhancetool`, `cleancache`, `sampling` — modifiers
+- Custom transformers: load via `transformers[]` in config.json
 
-Transformer configuration supports:
-- Global application (provider level)
-- Model-specific application
-- Option passing (e.g., `max_tokens` parameter for `maxtoken`)
-- `skipTransform` per request to bypass transformer pipeline
-- `authHeader` for custom authorization headers
+### Agent System (`packages/server/src/agents/`)
 
-### 3. Agent System (packages/server/src/agents/)
+Pluggable modules intercept requests/responses:
 
-Agents are pluggable feature modules that can:
-- Detect whether to handle a request (`shouldHandle`)
-- Modify requests (`reqHandler`)
-- Provide custom tools (`tools`)
+- `shouldHandle` — detect if agent should act
+- `reqHandler` — modify request before sending
+- `tools` — add custom tool definitions
 
-Built-in agents: none (imageAgent removed in recent commits)
+Flow: preHandler hook → add tools → onSend intercept → execute → stream back.
 
-Agent tool call flow:
-1. Detect and mark agents in `preHandler` hook
-2. Add agent tools to the request
-3. Intercept tool call events in `onSend` hook
-4. Execute agent tool and initiate new LLM request
-5. Stream results back
+### SSE Stream Processing
 
-### 4. SSE Stream Processing
+Custom Transform streams handle Server-Sent Events:
+- `SSEParserTransform` — parse SSE text → event objects
+- `SSESerializerTransform` — event objects → SSE text
+- `rewriteStream` — intercept/modify stream data
 
-The server uses custom Transform streams to handle Server-Sent Events:
-- `SSEParserTransform`: Parses SSE text stream into event objects
-- `SSESerializerTransform`: Serializes event objects into SSE text stream
-- `rewriteStream`: Intercepts and modifies stream data (for agent tool calls)
+### Configuration
 
-### 5. Configuration Management
+`~/.claude-code-router/config.json` (JSON5, supports comments):
 
-Configuration file location: `~/.claude-code-router/config.json`
+```json
+{
+  "Providers": [...],      // API providers + models
+  "Router": {...},          // default, background, think, longContext
+  "transformers": [...],    // custom transformer plugins
+  "CUSTOM_ROUTER_PATH": "..." // custom routing JS
+}
+```
 
-Key features:
-- Supports environment variable interpolation (`$VAR_NAME` or `${VAR_NAME}`)
-- JSON5 format (supports comments)
-- Automatic backups (keeps last 3 backups)
-- Hot reload requires service restart (`ccr restart`)
+- Environment variable interpolation: `$VAR_NAME` or `${VAR_NAME}`
+- API keys use env vars: `"api_key": "$OPENAI_API_KEY"`
+- Hot reload: `ccr restart` (NOT `ccr stop` then start)
 
-Configuration validation:
-- If `Providers` are configured, both `HOST` and `APIKEY` must be set
-- Otherwise listens on `0.0.0.0` without authentication
+### Logging
 
-### 6. Logging System
+Two separate logs:
+- **Server logs** (pino): `~/.claude-code-router/logs/ccr-*.log` — HTTP requests, API calls, events
+- **App logs**: `~/.claude-code-router/claude-code-router.log` — routing decisions, business logic
 
-Two separate logging systems:
-
-**Server-level logs** (pino):
-- Location: `~/.claude-code-router/logs/ccr-*.log`
-- Content: HTTP requests, API calls, server events
-- Configuration: `LOG_LEVEL` (fatal/error/warn/info/debug/trace)
-
-**Application-level logs**:
-- Location: `~/.claude-code-router/claude-code-router.log`
-- Content: Routing decisions, business logic events
+Set via `LOG_LEVEL` env var: `fatal`, `error`, `warn`, `info`, `debug`, `trace`.
 
 ## CLI Commands
 

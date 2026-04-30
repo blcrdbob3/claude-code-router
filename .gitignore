@@ -12,7 +12,6 @@ tsconfig.tsbuildinfo
 docs/build
 docs/.docusaurus
 
-# Claude Code
-.claude/
+# Local backups
 .serena/
 .mcp.json

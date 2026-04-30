@@ -167,7 +167,9 @@ export const run = async (_args: string[] = []) => {
   const server = await getServer();
   const app = server.app;
   // Save the PID of the background process
+  console.log('[DEBUG] Writing PID:', process.pid, 'to', PID_FILE);
   writeFileSync(PID_FILE, process.pid.toString());
+  console.log('[DEBUG] PID written, about to start server');
 
   app.post('/api/update/perform', async () => {
     return await performUpdate();
@@ -214,24 +216,21 @@ export const restartService = async () => {
   // Start the service again in the background
   console.log("Starting claude code router service...");
   const serverPath = path.join(__dirname, "..", "..", "server", "dist", "index.js");
-  console.log("[DEBUG] restartService serverPath:", serverPath);
-  
-  // Capture server output to debug why it fails to start
-  const logDir = path.join(HOME_DIR, "logs");
-  if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
-  const restartLog = fs.openSync(path.join(logDir, "restart-debug.log"), "a");
-  
-  const startProcess = spawn("node", [serverPath], {
+
+  const logFile = path.join(HOME_DIR, "logs", "ccr-restart.log");
+  const startProcess = spawn("bash", [
+    "-c",
+    `nohup setsid node "${serverPath}" > "${logFile}" 2>&1 < /dev/null &`
+  ], {
     detached: true,
-    stdio: ["ignore", restartLog, restartLog],
+    stdio: "ignore",
   });
-  console.log("[DEBUG] restartService startProcess.pid:", startProcess.pid);
   startProcess.on("error", (error) => {
-    console.error("[DEBUG] restartService error:", error.message);
+    console.error("Failed to start service:", error.message);
     process.exit(1);
   });
   startProcess.unref();
-  console.log("✅ Service started successfully in the background.");
+  console.log("Service started successfully in the background.");
 };
 
 

@@ -210,33 +210,39 @@ async function main() {
 
   switch (command) {
     case "start":
-      console.log("[DEBUG] start: checking if running...");
-      if (isServiceRunning()) {
-        console.log('claude-code-router server is already running');
+      if (!isRunning) {
+        console.log("Starting claude-code-router service...");
+
+        const serverPath = "/home/bacon/Videos/Projects/homelab/claude/claude-code-router/packages/server/dist/index.js";
+
+        // Use nohup with setsid for proper daemonization
+        const logFile = "/home/bacon/.claude-code-router/logs/ccr-startup.log";
+        const startProcess = spawn("bash", [
+          "-c",
+          `nohup setsid node "${serverPath}" > "${logFile}" 2>&1 < /dev/null &`
+        ], {
+          detached: true,
+          stdio: "ignore",
+        });
+
+        startProcess.on("error", (error) => {
+          console.error("Failed to start service:", error.message);
+          process.exit(1);
+        });
+
+        startProcess.unref();
+
+        // Wait for server to initialize
+        if (await waitForService(8000)) {
+          console.log("Service started successfully.");
+        } else {
+          console.log("Service is starting in background...");
+        }
         process.exit(0);
+      } else {
+        console.log("claude-code-router service is already running.");
       }
-      console.log("[DEBUG] start: spawning server directly...");
-      const serverPath = join(__dirname, "..", "..", "server", "dist", "index.js");
-      console.log("[DEBUG] serverPath:", serverPath);
-      
-      // Capture server output to debug why it fails to start
-      const logDir = path.join(HOME_DIR, "logs");
-      const fs = require("fs");
-      if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
-      const startLog = fs.openSync(path.join(logDir, "start-debug.log"), "a");
-      
-      const startProcess = spawn("node", [serverPath], {
-        detached: true,
-        stdio: ["ignore", startLog, startLog],
-      });
-      console.log("[DEBUG] startProcess.pid:", startProcess.pid);
-      startProcess.on("error", (error) => {
-        console.error("[DEBUG] start error:", error.message);
-        process.exit(1);
-      });
-      startProcess.unref();
-      console.log("Starting claude code router service...");
-      process.exit(0);
+      break;
     case "stop":
       try {
         const pid = parseInt(readFileSync(PID_FILE, "utf-8"));

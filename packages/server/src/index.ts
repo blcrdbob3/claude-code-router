@@ -1,11 +1,11 @@
-import { existsSync } from "fs";
+import { existsSync, writeFileSync } from "fs";
 import { writeFile } from "fs/promises";
 import { homedir } from "os";
 import { join } from "path";
 import { initConfig, initDir } from "./utils";
 import { createServer } from "./server";
 import { apiKeyAuth } from "./middleware/auth";
-import { CONFIG_FILE, HOME_DIR, listPresets } from "@CCR/shared";
+import { CONFIG_FILE, HOME_DIR, PID_FILE, listPresets } from "@CCR/shared";
 import { createStream } from 'rotating-file-stream';
 import { sessionUsageCache } from "@musistudio/llms";
 import { SSEParserTransform } from "./utils/SSEParser.transform";
@@ -35,7 +35,7 @@ async function initializeClaudeConfig() {
       lastOnboardingVersion: "1.0.17",
       projects: {},
     };
-    await writeFile(configPath, JSON.stringify(configContent, null, 2));
+    await writeFile(configPath, JSON.stringify(configContent, null, 2), "utf-8");
   }
 }
 
@@ -439,6 +439,9 @@ async function getServer(options: RunOptions = {}) {
 }
 
 async function run() {
+  // Write PID file before starting to avoid race condition with detached spawn
+  writeFileSync(PID_FILE, process.pid.toString());
+
   const server = await getServer();
   server.app.post("/api/restart", async () => {
     setTimeout(async () => {
