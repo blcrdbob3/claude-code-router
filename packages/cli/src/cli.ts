@@ -210,8 +210,33 @@ async function main() {
 
   switch (command) {
     case "start":
-      await run();
-      break;
+      console.log("[DEBUG] start: checking if running...");
+      if (isServiceRunning()) {
+        console.log('claude-code-router server is already running');
+        process.exit(0);
+      }
+      console.log("[DEBUG] start: spawning server directly...");
+      const serverPath = join(__dirname, "..", "..", "server", "dist", "index.js");
+      console.log("[DEBUG] serverPath:", serverPath);
+      
+      // Capture server output to debug why it fails to start
+      const logDir = path.join(HOME_DIR, "logs");
+      const fs = require("fs");
+      if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+      const startLog = fs.openSync(path.join(logDir, "start-debug.log"), "a");
+      
+      const startProcess = spawn("node", [serverPath], {
+        detached: true,
+        stdio: ["ignore", startLog, startLog],
+      });
+      console.log("[DEBUG] startProcess.pid:", startProcess.pid);
+      startProcess.on("error", (error) => {
+        console.error("[DEBUG] start error:", error.message);
+        process.exit(1);
+      });
+      startProcess.unref();
+      console.log("Starting claude code router service...");
+      process.exit(0);
     case "stop":
       try {
         const pid = parseInt(readFileSync(PID_FILE, "utf-8"));

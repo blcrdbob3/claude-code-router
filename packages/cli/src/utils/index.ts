@@ -213,17 +213,23 @@ export const restartService = async () => {
 
   // Start the service again in the background
   console.log("Starting claude code router service...");
-  const cliPath = path.join(__dirname, "cli.js");
-  const startProcess = spawn("node", [cliPath, "start"], {
+  const serverPath = path.join(__dirname, "..", "..", "server", "dist", "index.js");
+  console.log("[DEBUG] restartService serverPath:", serverPath);
+  
+  // Capture server output to debug why it fails to start
+  const logDir = path.join(HOME_DIR, "logs");
+  if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+  const restartLog = fs.openSync(path.join(logDir, "restart-debug.log"), "a");
+  
+  const startProcess = spawn("node", [serverPath], {
     detached: true,
-    stdio: "ignore",
+    stdio: ["ignore", restartLog, restartLog],
   });
-
+  console.log("[DEBUG] restartService startProcess.pid:", startProcess.pid);
   startProcess.on("error", (error) => {
-    console.error("Failed to start service:", error);
-    throw error;
+    console.error("[DEBUG] restartService error:", error.message);
+    process.exit(1);
   });
-
   startProcess.unref();
   console.log("✅ Service started successfully in the background.");
 };
